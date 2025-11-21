@@ -9,7 +9,7 @@ app.use(cors());
 
 // URL base do Addon de destino (O Addon real que você quer acessar)
 // 🚨 SUBSTITUA ESTE ENDEREÇO PELO SEU ADDON REAL 🚨
-const TARGET_ADDON_URL = 'https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/manifest.json'; 
+const TARGET_ADDON_URL = 'https://torrentio.strem.fun/manifest.json'; 
 
 // Endpoint Proxy: Recebe requisições no formato /streams/:type/:id.json
 // Ex: /streams/movie/tt1234.json
@@ -49,4 +49,5 @@ app.get('/', (req, res) => {
 });
 
 // Exporta o aplicativo Express para ser usado pelo Vercel
+
 module.exports = app;
