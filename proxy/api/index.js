@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 
 // URL base do Addon de destino (Stremio)
-const TARGET_ADDON_URL = 'https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club'; 
+const TARGET_ADDON_URL = 'https://superflixapi.asia/lista?category=anime&type=tmdb&format=json&order=asc'; 
 // URL da API Superflix
 const SUPERFLIX_URL = 'https://superflixapi.asia/lista?category=anime&type=tmdb&format=json&order=asc';
 
@@ -71,3 +71,4 @@ app.get('/streams/:type/:id.json', async (req, res) => {
 });
 
 module.exports = app;
+
