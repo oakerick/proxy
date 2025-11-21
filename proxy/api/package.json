@@ -1,0 +1,14 @@
+{
+  "name": "stremio-proxy-vercel",
+  "version": "1.0.0",
+  "description": "Proxy para contornar CORS no player Stremio-like",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-fetch": "^2.6.1",
+    "cors": "^2.8.5"
+  }
+}
