@@ -7,75 +7,67 @@ const app = express();
 // Configuração de CORS: Permite acesso de qualquer origem (seu HTML)
 app.use(cors());
 
-// URL base do Addon de destino (O Addon real que você quer acessar)
-// AJUSTADO: A URL base NÃO deve incluir o /manifest.json
-const TARGET_ADDON_URL = 'https://torrentio.strem.fun/manifest.json'; 
+// URL base do Addon de destino (Stremio)
+const TARGET_ADDON_URL = 'https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club'; 
+// URL da API Superflix
+const SUPERFLIX_URL = 'https://superflixapi.asia/lista?category=anime&type=tmdb&format=json&order=asc';
 
-// 1. Endpoint Proxy para buscar STREAMS
-// Recebe requisições no formato /streams/:type/:id.json
-app.get('/streams/:type/:id.json', async (req, res) => {
-    const { type, id } = req.params;
-    
-    // Constrói o caminho completo da API do Addon (Padrão Stremio)
-    const addonPath = `/stream/${type}/${id}.json`;
-    const fullTargetUrl = TARGET_ADDON_URL + addonPath;
+// Rota de saúde
+app.get('/', (req, res) => {
+    res.send('Proxy AniStream Ativo!');
+});
 
-    console.log(`[PROXY] Requisitando Streams: ${fullTargetUrl}`);
+// --- ROTAS SUPERFLIX (NOVO) ---
 
+app.get('/superflix', async (req, res) => {
+    console.log(`[PROXY] Buscando lista Superflix: ${SUPERFLIX_URL}`);
     try {
-        const response = await fetch(fullTargetUrl);
+        const response = await fetch(SUPERFLIX_URL);
         
-        res.status(response.status);
-        res.set('Content-Type', response.headers.get('content-type'));
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        
+        const data = await response.json();
+        res.json(data); // Retorna o JSON da Superflix
 
+    } catch (error) {
+        console.error('Erro Superflix:', error);
+        res.status(500).json({ error: 'Falha ao buscar na Superflix via Proxy.' });
+    }
+});
+
+
+// --- ROTAS STREMIO (MANTIDAS) ---
+
+app.get('/manifest', async (req, res) => {
+    try {
+        const response = await fetch(TARGET_ADDON_URL + '/manifest.json');
         const data = await response.json();
         res.json(data);
-
     } catch (error) {
-        console.error('Erro no Proxy ao buscar Streams:', error);
-        res.status(500).json({ 
-            streams: [],
-            error: 'Falha ao buscar Streams através do Proxy. Verifique TARGET_ADDON_URL e a rota.' 
-        });
+        res.status(500).json({ error: 'Erro no Manifest' });
     }
 });
 
-// 2. Endpoint Proxy para buscar o MANIFEST/CATÁLOGO
-// Recebe requisições no formato /manifest
-app.get('/manifest', async (req, res) => {
-    // A URL do manifest é sempre o TARGET_ADDON_URL + /manifest.json
-    const fullTargetUrl = TARGET_ADDON_URL + '/manifest.json';
-
-    console.log(`[PROXY] Requisitando Manifest: ${fullTargetUrl}`);
-
+app.get('/catalog/:type/:id.json', async (req, res) => {
+    const { type, id } = req.params;
     try {
-        const response = await fetch(fullTargetUrl);
-        
-        if (!response.ok) {
-            throw new Error(`Erro HTTP: ${response.status}.`);
-        }
-        
+        const response = await fetch(`${TARGET_ADDON_URL}/catalog/${type}/${id}.json`);
         const data = await response.json();
-        
-        res.status(response.status);
-        res.set('Content-Type', response.headers.get('content-type'));
-        
-        // Retorna apenas a lista de catálogos do manifest (ou o manifest completo, se preferir)
-        res.json({ catalogs: data.catalogs || [] });
-
+        res.json(data);
     } catch (error) {
-        console.error('Erro no Proxy ao buscar Manifest:', error);
-        res.status(500).json({ 
-            catalogs: [],
-            error: 'Falha ao buscar Manifest através do Proxy.' 
-        });
+        res.status(500).json({ error: 'Erro no Catálogo' });
     }
 });
 
-// Rota de saúde simples para checar se o proxy está no ar
-app.get('/', (req, res) => {
-    res.send(`Proxy Addon Stremio ativo! Target: ${TARGET_ADDON_URL}`);
+app.get('/streams/:type/:id.json', async (req, res) => {
+    const { type, id } = req.params;
+    try {
+        const response = await fetch(`${TARGET_ADDON_URL}/stream/${type}/${id}.json`);
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro nos Streams' });
+    }
 });
 
-// Exporta o aplicativo Express para ser usado pelo Vercel
 module.exports = app;
